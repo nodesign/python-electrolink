@@ -1,0 +1,10 @@
+{
+    "broker_server": "localhost",
+    "user":"None",
+    "password":"None",
+    "ssl":false,
+    "ssl_params":{},
+    "port": 1883, 
+    "keepalive":60,
+    "thing_name": "337d23ef-8e36-4b74-ae93-d016ba37b429"
+}
