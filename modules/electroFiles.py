@@ -46,9 +46,23 @@ def disk_usage(path):
     free = st.f_bavail * st.f_frsize
     total = st.f_blocks * st.f_frsize
     used = (st.f_blocks - st.f_bfree) * st.f_frsize
-    rslt = "total= "+str(total) + ", used= " + str(used) + ", free= "+ str(free)
+    rslt = {"total" : str(intWithSpaces(total/1000000))+"Mb", \
+            "used"  : str(intWithSpaces(used/1000000))+"Mb", \
+            "free"  : str(intWithSpaces(free/1000000))+"Mb"}
 
     return rslt
+
+def intWithSpaces(x):
+    if type(x) not in [type(0), type(0L)]:
+        raise TypeError("Parameter must be an integer.")
+    if x < 0:
+        return '-' + intWithCommas(-x)
+    result = ''
+    while x >= 1000:
+        x, r = divmod(x, 1000)
+        result = " %03d%s" % (r, result)
+        #result = ",%03d%s" % (r, result)
+    return "%d%s" % (x, result)
 
 def is_binary(filename):
     """Return true if the given filename is binary.
