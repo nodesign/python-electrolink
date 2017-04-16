@@ -1,4 +1,5 @@
 import os
+from collections import namedtuple
 
 def getFileList(arg):
     path = arg[0]
@@ -33,6 +34,22 @@ def deleteFile(arg):
     except :
         raise Exception("File don't exist or can't be removed")
 
+
+def disk_usage(path):
+    """Return disk usage statistics about the given path.
+
+    Returned valus is a named tuple with attributes 'total', 'used' and
+    'free', which are the amount of total, used and free space, in bytes.
+    """
+    p = path[0]
+    st = os.statvfs(p)
+    free = st.f_bavail * st.f_frsize
+    total = st.f_blocks * st.f_frsize
+    used = (st.f_blocks - st.f_bfree) * st.f_frsize
+    rslt = "total= "+str(total) + ", used= " + str(used) + ", free= "+ str(free)
+
+    return rslt
+
 def is_binary(filename):
     """Return true if the given filename is binary.
     @raise EnvironmentError: if the file does not exist or cannot be accessed.
@@ -58,5 +75,6 @@ callbacks = {
       "getFileList": {"call": getFileList,  "parameters": "path",       "description": "Get file list in directory"},
       "writeFile":   {"call": writeFile,    "parameters": "path, data", "description": "Write data in file"}, 
       "getFile":     {"call": getFile,      "parameters": "path",       "description": "Get file data"},
-      "deleteFile":  {"call": deleteFile,   "parameters": "path",       "description": "Delete specified file"}
+      "deleteFile":  {"call": deleteFile,   "parameters": "path",       "description": "Delete specified file"},
+      "diskUsage":   {"call": disk_usage,   "parameters": "path",       "description": "Get disk space info"}
       }
