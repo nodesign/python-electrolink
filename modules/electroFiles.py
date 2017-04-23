@@ -1,30 +1,54 @@
 import os
 from collections import namedtuple
+import base64
 
 def getFileList(arg):
     path = arg[0]
     return os.listdir(path)
 
-def writeFile(arg):
+def writeTextFile(arg):
     name = arg[0]
     data = arg[1]
+    writeType = "a"
+    if (len(arg)>2):
+        writeType = arg[2]
     try :
-        f = open(name, "w")
+        f = open(name, writeType)
         f.write(data)
         f.close()
         return "OK"
     except :
         raise Exception("File can't be written")
 
-def getFile(arg):
+def writeBinaryFile(arg):
+    name = arg[0]
+    data = arg[1]
+    writeType = "ab"
+    if (len(arg)>2):
+        writeType = arg[2]
+    try :
+        f = open(name, writeType)
+        f.write(data)
+        f.close()
+        return "OK"
+    except :
+        raise Exception("File can't be written")
+
+def getTextFile(arg):
     name = arg[0]
     if (is_binary(name) is True):
         raise Exception("Oups! This is a binary file. Only text files are allowed!")
     else :
         f = open(name, "r")
         data = f.read()
+        byteArray = bytes(data)
         f.close()
-        return data
+        return byteArray
+
+def getFileSize(arg):
+    name = arg[0]
+    fileSize = os.stat(name)[6] # st_size - made compatible with micropython
+    return {"size":fileSize, "unit":"bytes"}
 
 def deleteFile(arg):
     name = arg[0]
@@ -46,14 +70,16 @@ def disk_usage(path):
     free = st.f_bavail * st.f_frsize
     total = st.f_blocks * st.f_frsize
     used = (st.f_blocks - st.f_bfree) * st.f_frsize
-    rslt = {"total" : str(intWithSpaces(total/1000000))+"Mb", \
-            "used"  : str(intWithSpaces(used/1000000))+"Mb", \
-            "free"  : str(intWithSpaces(free/1000000))+"Mb"}
+    rslt = {"total" : str(intWithSpaces(total/1000000)), \
+            "used"  : str(intWithSpaces(used/1000000)), \
+            "free"  : str(intWithSpaces(free/1000000)), \
+            "unit"  : "Mb" }
 
     return rslt
 
+# needed for visualization of space sizes
 def intWithSpaces(x):
-    if type(x) not in [type(0), type(0L)]:
+    if type(x) not in type(0):
         raise TypeError("Parameter must be an integer.")
     if x < 0:
         return '-' + intWithCommas(-x)
@@ -85,10 +111,26 @@ def is_binary(filename):
 
     return False
 
+def getFileStream(arg):
+    file_object = open(arg[0], "r")
+    return (base64.b64encode(i) for i in read_in_chunks(file_object))
+
+def read_in_chunks(file_object, chunk_size=528):
+    """Lazy function (generator) to read a file piece by piece.
+    Default chunk size: 1k."""
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
+
 callbacks = {
-      "getFileList": {"call": getFileList,  "parameters": "path",       "description": "Get file list in directory"},
-      "writeFile":   {"call": writeFile,    "parameters": "path, data", "description": "Write data in file"}, 
-      "getFile":     {"call": getFile,      "parameters": "path",       "description": "Get file data"},
-      "deleteFile":  {"call": deleteFile,   "parameters": "path",       "description": "Delete specified file"},
-      "diskUsage":   {"call": disk_usage,   "parameters": "path",       "description": "Get disk space info"}
+      "getBinaryFile":   {"call": getFileStream,  "parameters": "path, 'base64'", "description": "Get binary file"},
+      "getFileSize":     {"call": getFileSize,     "parameters": "path",       "description": "Get file size in bytes"},
+      "getFileList":     {"call": getFileList,     "parameters": "path",       "description": "Get file list in directory"},
+      "writeTextFile":   {"call": writeTextFile,   "parameters": "path, data, waytowrite", "description": "Write data in file"},
+      "writeBinaryFile": {"call": writeBinaryFile, "parameters": "path, data, waytowrite", "description": "Write data in file"}, 
+      "getTextFile":     {"call": getTextFile,     "parameters": "path",       "description": "Get text file data"},
+      "deleteFile":      {"call": deleteFile,      "parameters": "path",       "description": "Delete specified file"},
+      "diskUsage":       {"call": disk_usage,      "parameters": "path",       "description": "Get disk space info"}
       }

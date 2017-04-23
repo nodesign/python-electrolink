@@ -6,5 +6,8 @@
     "ssl_params":{},
     "port": 1883, 
     "keepalive":60,
-    "thing_name": "337d23ef-8e36-4b74-ae93-d016ba37b429"
+    "device_id": "337d23ef-8e36-4b74-ae93-d016ba37b429",
+    "command_topic": "a7049dcf-ceae-41bc-9774-00c38fe2299d",
+    "reply_topic": "c6349475-0ab5-45b1-abb0-60911e2b6b6d",
+    "error_topic": "61acfc15-5fce-42b1-9254-c3f913842b6c"
 }
